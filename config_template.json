@@ -1,0 +1,15 @@
+{
+    "isModuleEnabled": true,
+    "roleAssignChannelId": "",
+    "roles": {
+        "Role Name": {
+            "id": "",
+            "emoji": "😄",
+            "style": 1
+        }
+    },
+    "events": {
+        "ready.js": true,
+        "interactionCreate.js": true
+    }
+}
