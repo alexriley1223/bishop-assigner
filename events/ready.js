@@ -1,45 +1,45 @@
 const { roleAssignChannelId, roles } = require('../config.json');
-const { ActionRowBuilder, ButtonBuilder, EmbedBuilder } = require("discord.js");
+const { ActionRowBuilder, ButtonBuilder, EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 const { name, color } = require('@config/bot.json');
 const log = require('@helpers/logger');
 
 module.exports = (client) => {
-	
-    async function embedCheckAndGeneration() {
-        await client.guilds.fetch(client.guildId);
 
-        let hasPreviousEmbed = true;
+	async function embedCheckAndGeneration() {
+		await client.guilds.fetch(client.guildId);
 
-        /* Get previous embed message id? */
-        if(!fs.existsSync(__dirname + '/../embed_id.txt')) {
-            hasPreviousEmbed = false;
-        }
+		let hasPreviousEmbed = true;
 
-        // Check ticket channel exists
-        await client.channels.fetch(roleAssignChannelId)
-        .catch((e) => {
-            throw Error('❌ The channel to assign roles does not exist!');
-        });
+		/* Get previous embed message id? */
+		if (!fs.existsSync(__dirname + '/../embed_id.txt')) {
+			hasPreviousEmbed = false;
+		}
 
-        const openTicketChannel = await client.channels.cache.get(
-            roleAssignChannelId
-        );
-        
-        if (!openTicketChannel.isTextBased()) {
-            throw Error('❌ The channel to assign roles is not a text channel!');
-        }
+		// Check ticket channel exists
+		await client.channels.fetch(roleAssignChannelId)
+			.catch((e) => {
+				throw Error('❌ The channel to assign roles does not exist!');
+			});
 
-        if (openTicketChannel.messages && hasPreviousEmbed) {
-            const oldEmbedId = fs.readFileSync(__dirname + '/../embed_id.txt', 'utf8');
-            await openTicketChannel.messages
-                .fetch(oldEmbedId)
-                .then((msg) => {
-                    msg.delete().catch(() => {});
-                }).catch(() => {});
-        }
+		const openTicketChannel = await client.channels.cache.get(
+			roleAssignChannelId,
+		);
 
-        const embed = new EmbedBuilder()
+		if (!openTicketChannel.isTextBased()) {
+			throw Error('❌ The channel to assign roles is not a text channel!');
+		}
+
+		if (openTicketChannel.messages && hasPreviousEmbed) {
+			const oldEmbedId = fs.readFileSync(__dirname + '/../embed_id.txt', 'utf8');
+			await openTicketChannel.messages
+				.fetch(oldEmbedId)
+				.then((msg) => {
+					msg.delete().catch(() => {});
+				}).catch(() => {});
+		}
+
+		const embed = new EmbedBuilder()
 			.setColor(color)
 			.setTitle('Role Assigner')
 			.setDescription(
@@ -48,38 +48,39 @@ module.exports = (client) => {
 			.setFooter({
 				text: `${name} Bot`,
 				iconURL: client.user.displayAvatarURL({ dynamic: true }),
-		});
+			});
 
-        const row = new ActionRowBuilder();
-        let rowCount = 0;
+		const row = new ActionRowBuilder();
+		let rowCount = 0;
 
-        for (const [key, value] of Object.entries(roles)) {
-            if(rowCount < 25) {
-                row.addComponents(
-                    new ButtonBuilder()
-                        .setCustomId(value.id)
-                        .setLabel(key)
-                        .setEmoji(value.emoji)
-                        .setStyle(value.style)
-                )
-            }
-            rowCount++;
-        }
+		for (const [key, value] of Object.entries(roles)) {
+			if (rowCount < 25) {
+				row.addComponents(
+					new ButtonBuilder()
+						.setCustomId(value.id)
+						.setLabel(key)
+						.setEmoji(value.emoji)
+						.setStyle(value.style),
+				);
+			}
+			rowCount++;
+		}
 
-        try {
-            client.channels.cache
-                .get(roleAssignChannelId)
-                .send({
-                    embeds: [embed],
-                    components: [row],
-                })
-                .then((msg) => {
-                    fs.writeFileSync(__dirname + '/../embed_id.txt', `${msg.id}`);
-                });
-        } catch (e) {
-            log.error('Assigner', `❌ ${e}`);
-        }
-    }
+		try {
+			client.channels.cache
+				.get(roleAssignChannelId)
+				.send({
+					embeds: [embed],
+					components: [row],
+				})
+				.then((msg) => {
+					fs.writeFileSync(__dirname + '/../embed_id.txt', `${msg.id}`);
+				});
+		}
+		catch (e) {
+			log.error('Assigner', `❌ ${e}`);
+		}
+	}
 
-    embedCheckAndGeneration();
+	embedCheckAndGeneration();
 };
