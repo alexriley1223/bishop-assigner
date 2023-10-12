@@ -1,6 +1,6 @@
 <div align="center">
 	<p>
-		<img src="https://raw.githubusercontent.com/alexriley1223/bishop-assigner/main/static/banner.png" alt="Bishop Assigner" />
+		<img src="https://raw.githubusercontent.com/alexriley1223/bishop-assigner/master/static/banner.png" alt="Bishop Assigner" />
 	</p>
 	<br />
 	<p>

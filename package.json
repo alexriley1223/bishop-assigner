@@ -1,6 +1,6 @@
 {
     "name": "bishop-assigner",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Assign server roles automatically",
     "author": "Alex Riley",
     "license": "GNU GENERAL PUBLIC LICENSE",
