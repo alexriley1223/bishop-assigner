@@ -2,11 +2,14 @@ const { roleAssignChannelId, roles } = require('../config.json');
 const { ActionRowBuilder, ButtonBuilder, EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 const { name, color } = require('@config/bot.json');
-const log = require('@helpers/logger');
+const BishopModuleEvent = require('@classes/BishopModuleEvent');
+const { getParentDirectoryString } = require('@helpers/utils');
+const { events } = require('../config.json');
 
-module.exports = (client) => {
-
-	async function embedCheckAndGeneration() {
+module.exports = new BishopModuleEvent({
+	name: 'ready',
+	enabled: events[getParentDirectoryString(__filename, __dirname, 'events')],
+	init: async (client, ...opt) => {
 		await client.guilds.fetch(client.guildId);
 
 		let hasPreviousEmbed = true;
@@ -18,8 +21,8 @@ module.exports = (client) => {
 
 		// Check ticket channel exists
 		await client.channels.fetch(roleAssignChannelId)
-			.catch((e) => {
-				throw Error('❌ The channel to assign roles does not exist!');
+			.catch(() => {
+				throw Error('The channel to assign roles does not exist!');
 			});
 
 		const openTicketChannel = await client.channels.cache.get(
@@ -27,7 +30,7 @@ module.exports = (client) => {
 		);
 
 		if (!openTicketChannel.isTextBased()) {
-			throw Error('❌ The channel to assign roles is not a text channel!');
+			throw Error('The channel to assign roles is not a text channel!');
 		}
 
 		if (openTicketChannel.messages && hasPreviousEmbed) {
@@ -35,8 +38,8 @@ module.exports = (client) => {
 			await openTicketChannel.messages
 				.fetch(oldEmbedId)
 				.then((msg) => {
-					msg.delete().catch(() => {});
-				}).catch(() => {});
+					msg.delete();
+				});
 		}
 
 		const embed = new EmbedBuilder()
@@ -78,9 +81,7 @@ module.exports = (client) => {
 				});
 		}
 		catch (e) {
-			log.error('Assigner', `❌ ${e}`);
+			client.bishop.logger.error('Assigner', `${e}`);
 		}
 	}
-
-	embedCheckAndGeneration();
-};
+});

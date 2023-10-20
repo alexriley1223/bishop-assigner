@@ -1,50 +1,59 @@
 const { InteractionType } = require('discord.js');
 const fs = require('fs');
 const { roles } = require('../config.json');
+const { getParentDirectoryString } = require('@helpers/utils');
+const { events } = require('../config.json');
+const BishopModuleEvent = require('@classes/BishopModuleEvent');
 
-module.exports = (client, params) => {
+module.exports = new BishopModuleEvent({
+	name: 'interactionCreate',
+	enabled: events[getParentDirectoryString(__filename, __dirname, 'events')],
+	init: async (client, ...opt) => {
 
-	if (params[0].type === InteractionType.MessageComponent) {
-		const embedId = fs.readFileSync(__dirname + '/../embed_id.txt', 'utf8');
-
-		if (params[0].message.id == embedId) {
-			let isRoleAllowed = false;
-			Object.values(roles).forEach(roleData => {
-				if (roleData.id == params[0].customId) {
-					isRoleAllowed = true;
+		const interaction = opt[0];
+		if (interaction.type === InteractionType.MessageComponent) {
+			const embedId = fs.readFileSync(__dirname + '/../embed_id.txt', 'utf8');
+	
+			if (interaction.message.id == embedId) {
+				let isRoleAllowed = false;
+				Object.values(roles).forEach(roleData => {
+					if (roleData.id == interaction.customId) {
+						isRoleAllowed = true;
+					}
+				});
+	
+				if (!isRoleAllowed) {
+					return interaction.reply({
+						content: 'Invalid Role Selection',
+						ephemeral: true,
+					});
 				}
-			});
-
-			if (!isRoleAllowed) {
-				return params[0].reply({
-					content: 'Invalid Role Selection',
-					ephemeral: true,
-				});
-			}
-
-			const role = params[0].guild.roles.cache.find(role => role.id === params[0].customId);
-
-			if (!role) {
-				return params[0].reply({
-					content: 'Role couldn\'t be found',
-					ephemeral: true,
-				});
-			}
-
-			if (params[0].member.roles.cache.some(userRole => userRole.id === role.id)) {
-				params[0].member.roles.remove(role);
-				return params[0].reply({
-					content: `${role.name} has been removed from you.`,
-					ephemeral: true,
-				});
-			}
-			else {
-				params[0].member.roles.add(role);
-				return params[0].reply({
-					content: `${role.name} has been assigned to you!`,
-					ephemeral: true,
-				});
+	
+				const role = interaction.guild.roles.cache.find(assignedRole => assignedRole.id === interaction.customId);
+	
+				if (!role) {
+					return interaction.reply({
+						content: 'Role couldn\'t be found',
+						ephemeral: true,
+					});
+				}
+	
+				if (interaction.member.roles.cache.some(userRole => userRole.id === role.id)) {
+					interaction.member.roles.remove(role);
+					return interaction.reply({
+						content: `${role.name} has been removed from you.`,
+						ephemeral: true,
+					});
+				}
+				else {
+					interaction.member.roles.add(role);
+					return interaction.reply({
+						content: `${role.name} has been assigned to you!`,
+						ephemeral: true,
+					});
+				}
 			}
 		}
-	}
-};
+	},
+	
+});
