@@ -83,5 +83,5 @@ module.exports = new BishopModuleEvent({
 		catch (e) {
 			client.bishop.logger.error('Assigner', `${e}`);
 		}
-	}
+	},
 });

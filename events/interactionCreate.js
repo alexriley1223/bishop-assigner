@@ -13,7 +13,7 @@ module.exports = new BishopModuleEvent({
 		const interaction = opt[0];
 		if (interaction.type === InteractionType.MessageComponent) {
 			const embedId = fs.readFileSync(__dirname + '/../embed_id.txt', 'utf8');
-	
+
 			if (interaction.message.id == embedId) {
 				let isRoleAllowed = false;
 				Object.values(roles).forEach(roleData => {
@@ -21,23 +21,23 @@ module.exports = new BishopModuleEvent({
 						isRoleAllowed = true;
 					}
 				});
-	
+
 				if (!isRoleAllowed) {
 					return interaction.reply({
 						content: 'Invalid Role Selection',
 						ephemeral: true,
 					});
 				}
-	
+
 				const role = interaction.guild.roles.cache.find(assignedRole => assignedRole.id === interaction.customId);
-	
+
 				if (!role) {
 					return interaction.reply({
 						content: 'Role couldn\'t be found',
 						ephemeral: true,
 					});
 				}
-	
+
 				if (interaction.member.roles.cache.some(userRole => userRole.id === role.id)) {
 					interaction.member.roles.remove(role);
 					return interaction.reply({
@@ -55,5 +55,5 @@ module.exports = new BishopModuleEvent({
 			}
 		}
 	},
-	
+
 });
