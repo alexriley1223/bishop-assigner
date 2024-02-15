@@ -12,18 +12,11 @@ module.exports = new BishopModuleEvent({
 	init: async (client, ...opt) => {
 		await client.guilds.fetch(client.guildId);
 
-		let hasPreviousEmbed = true;
-
-		/* Get previous embed message id? */
-		if (!fs.existsSync(__dirname + '/../embed_id.txt')) {
-			hasPreviousEmbed = false;
-		}
-
 		// Check ticket channel exists
 		await client.channels.fetch(roleAssignChannelId)
-			.catch(() => {
-				throw Error('The channel to assign roles does not exist!');
-			});
+		.catch(() => {
+			throw Error('The channel to assign roles does not exist!');
+		});
 
 		const openTicketChannel = await client.channels.cache.get(
 			roleAssignChannelId,
@@ -33,14 +26,7 @@ module.exports = new BishopModuleEvent({
 			throw Error('The channel to assign roles is not a text channel!');
 		}
 
-		if (openTicketChannel.messages && hasPreviousEmbed) {
-			const oldEmbedId = fs.readFileSync(__dirname + '/../embed_id.txt', 'utf8');
-			await openTicketChannel.messages
-				.fetch(oldEmbedId)
-				.then((msg) => {
-					msg.delete();
-				});
-		}
+		let hasPreviousEmbed = fs.existsSync(__dirname + '/../embed_id.txt');
 
 		const embed = new EmbedBuilder()
 			.setColor(color)
@@ -70,15 +56,26 @@ module.exports = new BishopModuleEvent({
 		}
 
 		try {
-			client.channels.cache
-				.get(roleAssignChannelId)
-				.send({
+
+			if (openTicketChannel.messages && hasPreviousEmbed) {
+				const oldEmbedId = fs.readFileSync(__dirname + '/../embed_id.txt', 'utf8');
+				await openTicketChannel.messages
+					.fetch(oldEmbedId)
+					.then((msg) => {
+						msg.edit({
+							embeds: [embed],
+							components: [row],
+						});
+					});
+			} else {
+				await openTicketChannel.send({
 					embeds: [embed],
 					components: [row],
 				})
 				.then((msg) => {
 					fs.writeFileSync(__dirname + '/../embed_id.txt', `${msg.id}`);
 				});
+			}	
 		}
 		catch (e) {
 			client.bishop.logger.error('Assigner', `${e}`);
