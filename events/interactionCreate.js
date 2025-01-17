@@ -14,7 +14,7 @@ module.exports = new BishopModuleEvent({
 		if (interaction.type === InteractionType.MessageComponent) {
 			const embedId = fs.readFileSync(__dirname + '/../embed_id.txt', 'utf8');
 
-			if (interaction.message.id == embedId) {
+			if (interaction.message.id.trim() == embedId.trim()) {
 				let isRoleAllowed = false;
 				Object.values(roles).forEach(roleData => {
 					if (roleData.id == interaction.customId) {
